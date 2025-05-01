@@ -24,7 +24,7 @@ from hummingbot.strategy_v2.executors.position_executor.data_types import Traili
 
 class DCAConfig(StrategyV2ConfigBase):
     script_file_name: str = os.path.basename(__file__)
-    markets: Dict[str, List[str]] = {}
+
     connector_name: str = "binance_perpetual_testnet"
     trading_pair: str = "BTC-USDT"
     side: TradeType = TradeType.BUY
@@ -39,6 +39,8 @@ class DCAConfig(StrategyV2ConfigBase):
     mode: DCAMode = DCAMode.MAKER
     activation_bounds: Optional[List[Decimal]] = None
 
+    markets = {connector_name: {trading_pair}}
+
 
 class SimpleDCA(StrategyV2Base):
     """
@@ -47,10 +49,10 @@ class SimpleDCA(StrategyV2Base):
 
     # account_config_set = False
     # markets: Dict[str, Set[str]]
-
-    @classmethod
-    def init_markets(cls, config: DCAConfig):
-        cls.markets = {config.connector_name: {config.trading_pair}}
+    #
+    # @classmethod
+    # def init_markets(cls, config: DCAConfig):
+    #     cls.markets = {config.connector_name: {config.trading_pair}}
 
     def __init__(self, connectors: Dict[str, ConnectorBase], config: DCAConfig):
         super().__init__(connectors, config)
@@ -82,3 +84,6 @@ class SimpleDCA(StrategyV2Base):
             take_profit=self.config.take_profit,
             trailing_stop=self.config.trailing_stop))]
         raise create_actions
+
+
+x = SimpleDCA()
