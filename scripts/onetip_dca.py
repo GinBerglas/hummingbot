@@ -1,6 +1,6 @@
 import os
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 import pandas_ta as ta  # noqa: F401
 from pydantic import Field, field_validator
@@ -46,6 +46,7 @@ class SimpleDCA(StrategyV2Base):
     """
 
     account_config_set = False
+    markets: Dict[str, Set[str]]
 
     @classmethod
     def init_markets(cls, config: DCAConfig):
