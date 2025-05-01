@@ -24,7 +24,7 @@ from hummingbot.strategy_v2.executors.position_executor.data_types import Traili
 
 class DCAConfig(StrategyV2ConfigBase):
     script_file_name: str = os.path.basename(__file__)
-
+    markets: Dict[str, List[str]] = {}
     connector_name: str = Field(default="binance_perpetual_testnet")
     trading_pair: str = Field(default="BTC-USDT")
     side: TradeType = TradeType.BUY
@@ -40,7 +40,7 @@ class DCAConfig(StrategyV2ConfigBase):
     activation_bounds: Optional[List[Decimal]] = None
 
 
-class SimpleDirectionalRSI(StrategyV2Base):
+class SimpleDCA(StrategyV2Base):
     """
 
     """
