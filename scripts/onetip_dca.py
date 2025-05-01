@@ -1,0 +1,83 @@
+import os
+from decimal import Decimal
+from typing import Dict, List, Optional
+
+import pandas_ta as ta  # noqa: F401
+from pydantic import Field, field_validator
+from hummingbot.connector.connector_base import ConnectorBase
+from hummingbot.core.clock import Clock
+from hummingbot.core.data_type.common import OrderType, PositionMode, PriceType, TradeType
+from hummingbot.data_feed.candles_feed.candles_factory import CandlesConfig
+from hummingbot.strategy.strategy_v2_base import StrategyV2Base, StrategyV2ConfigBase
+from hummingbot.strategy_v2.executors.dca_executor.data_types import DCAMode, DCAExecutorConfig
+from hummingbot.strategy_v2.executors.position_executor.data_types import PositionExecutorConfig, TripleBarrierConfig
+from hummingbot.strategy_v2.models.executor_actions import CreateExecutorAction, StopExecutorAction
+from decimal import Decimal
+from enum import Enum
+from typing import List, Literal, Optional
+
+from hummingbot.core.data_type.common import TradeType
+from hummingbot.strategy_v2.executors.data_types import ExecutorConfigBase
+from hummingbot.strategy_v2.executors.position_executor.data_types import TrailingStop
+
+
+
+class DCAConfig(StrategyV2ConfigBase):
+    script_file_name: str = os.path.basename(__file__)
+
+    connector_name: str = Field(default="binance_perpetual_testnet")
+    trading_pair: str = Field(default="BTC-USDT")
+    side: TradeType = TradeType.BUY
+    leverage: int = 1
+    amounts_quote: List[Decimal] = [Decimal(100),Decimal(100)]
+    prices: List[Decimal]  = [Decimal(94000),Decimal(91000)]
+    take_profit: Optional[Decimal] = None
+    stop_loss: Optional[Decimal] = None
+    trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.05"),
+                                                              trailing_delta=Decimal("0.01"))
+    time_limit: Optional[int] = None
+    mode: DCAMode = DCAMode.MAKER
+    activation_bounds: Optional[List[Decimal]] = None
+
+
+class SimpleDirectionalRSI(StrategyV2Base):
+    """
+
+    """
+
+    account_config_set = False
+
+    @classmethod
+    def init_markets(cls, config: DCAConfig):
+        cls.markets = {config.connector_name: {config.trading_pair}}
+
+    def __init__(self, connectors: Dict[str, ConnectorBase], config: DCAConfig):
+        super().__init__(connectors, config)
+        self.config = config
+
+    def start(self, clock: Clock, timestamp: float) -> None:
+        """
+        Start the strategy.
+        :param clock: Clock to use.
+        :param timestamp: Current time.
+        """
+        self._last_timestamp = timestamp
+        self.apply_initial_setting()
+
+
+    def create_actions_proposal(self) -> List[CreateExecutorAction]:
+        """
+        Create actions proposal based on the current state of the executors.
+        """
+        create_actions = [CreateExecutorAction(executor_config=DCAExecutorConfig(
+            timestamp=self.market_data_provider.time(),
+            connector_name=self.config.connector_name,
+            trading_pair=self.config.trading_pair,
+            mode=DCAMode.MAKER,
+            side=self.config.side,
+            prices=self.config.prices,
+            amounts_quote=self.config.amounts_quote,
+            stop_loss=self.config.stop_loss,
+            take_profit=self.config.take_profit,
+            trailing_stop=self.config.trailing_stop))]
+        raise create_actions
