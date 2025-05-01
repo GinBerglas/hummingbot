@@ -220,7 +220,7 @@ class DCAExecutor(ExecutorBase):
         return sum([order.cum_fees_quote for order in all_orders])
 
     async def on_start(self):
-        await super().on_start()
+        self.validate_sufficient_balance()
         if self.is_expired:
             self.close_execution_by(CloseType.EXPIRED)
 
