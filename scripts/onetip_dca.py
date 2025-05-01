@@ -48,11 +48,12 @@ class SimpleDCA(StrategyV2Base):
     """
 
     # account_config_set = False
-    # markets: Dict[str, Set[str]]
-    #
-    # @classmethod
-    # def init_markets(cls, config: DCAConfig):
-    #     cls.markets = {config.connector_name: {config.trading_pair}}
+    markets: Dict[str, Set[str]]
+
+    @classmethod
+    def init_markets(cls, config: DCAConfig):
+        markets = config.markets
+        cls.markets = markets
 
     def __init__(self, connectors: Dict[str, ConnectorBase], config: DCAConfig):
         super().__init__(connectors, config)
