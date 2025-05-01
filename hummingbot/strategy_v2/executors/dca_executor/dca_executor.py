@@ -220,7 +220,7 @@ class DCAExecutor(ExecutorBase):
         return sum([order.cum_fees_quote for order in all_orders])
 
     async def on_start(self):
-        await super().on_start()
+        self.validate_sufficient_balance()
         if self.is_expired:
             self.close_execution_by(CloseType.EXPIRED)
 
@@ -231,7 +231,7 @@ class DCAExecutor(ExecutorBase):
         """
         return all([order.is_done for order in self._open_orders]) and len(self._open_orders) == self.n_levels
 
-    async def validate_sufficient_balance(self):
+    def validate_sufficient_balance(self):
         """
         This method is responsible for checking the budget
         """
