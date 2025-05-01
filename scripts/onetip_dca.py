@@ -31,7 +31,7 @@ class SimpleDCAConfig(StrategyV2ConfigBase):
     side: TradeType = TradeType.BUY
     leverage: int = 1
     amounts_quote: List[Decimal] = [Decimal(100),Decimal(100)]
-    prices: List[Decimal]  = [Decimal(96000),Decimal(95000)]
+    prices: List[Decimal]  = [Decimal(96000000),Decimal(95000000)]
     take_profit: Optional[Decimal] = None
     stop_loss: Optional[Decimal] = None
     trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.05"),
