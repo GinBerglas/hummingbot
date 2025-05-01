@@ -11,7 +11,7 @@ from hummingbot.data_feed.candles_feed.candles_factory import CandlesConfig
 from hummingbot.strategy.strategy_v2_base import StrategyV2Base, StrategyV2ConfigBase
 from hummingbot.strategy_v2.executors.dca_executor.data_types import DCAMode, DCAExecutorConfig
 from hummingbot.strategy_v2.executors.position_executor.data_types import PositionExecutorConfig, TripleBarrierConfig
-from hummingbot.strategy_v2.models.executor_actions import CreateExecutorAction, StopExecutorAction
+from hummingbot.strategy_v2.models.executor_actions import CreateExecutorAction, StopExecutorAction, ExecutorAction
 from decimal import Decimal
 from enum import Enum
 from typing import List, Literal, Optional
@@ -70,7 +70,7 @@ class SimpleDCA(StrategyV2Base):
     #     self.apply_initial_setting()
 
 
-    def create_actions_proposal(self) -> List[CreateExecutorAction]:
+    def determine_executor_actions(self) -> List[ExecutorAction]:
         """
         Create actions proposal based on the current state of the executors.
         """
