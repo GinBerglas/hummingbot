@@ -27,11 +27,11 @@ class SimpleDCAConfig(StrategyV2ConfigBase):
     markets: Dict[str, List[str]] = {}
     exchange: str = Field(default="binance_perpetual_testnet")
     # connector_name: str = Field(default="binance_perpetual_testnet")
-    trading_pair: str = Field(default="BTC-USDT")
+    trading_pair: str = Field(default="ETH-USDT")
     side: TradeType = TradeType.BUY
     leverage: int = 1
     amounts_quote: List[Decimal] = [Decimal(5000),Decimal(5000)]
-    prices: List[Decimal]  = [Decimal(96000000),Decimal(95000000)]
+    prices: List[Decimal]  = [Decimal(1800),Decimal(1700)]
     take_profit: Optional[Decimal] = None
     stop_loss: Optional[Decimal] = None
     trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.05"),
