@@ -45,8 +45,8 @@ class SimpleDCA(StrategyV2Base):
 
     """
 
-    account_config_set = False
-    markets: Dict[str, Set[str]]
+    # account_config_set = False
+    # markets: Dict[str, Set[str]]
 
     @classmethod
     def init_markets(cls, config: DCAConfig):
@@ -56,14 +56,14 @@ class SimpleDCA(StrategyV2Base):
         super().__init__(connectors, config)
         self.config = config
 
-    def start(self, clock: Clock, timestamp: float) -> None:
-        """
-        Start the strategy.
-        :param clock: Clock to use.
-        :param timestamp: Current time.
-        """
-        self._last_timestamp = timestamp
-        self.apply_initial_setting()
+    # def start(self, clock: Clock, timestamp: float) -> None:
+    #     """
+    #     Start the strategy.
+    #     :param clock: Clock to use.
+    #     :param timestamp: Current time.
+    #     """
+    #     self._last_timestamp = timestamp
+    #     self.apply_initial_setting()
 
 
     def create_actions_proposal(self) -> List[CreateExecutorAction]:
