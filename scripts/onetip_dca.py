@@ -25,8 +25,8 @@ from hummingbot.strategy_v2.executors.position_executor.data_types import Traili
 class DCAConfig(StrategyV2ConfigBase):
     script_file_name: str = os.path.basename(__file__)
     markets: Dict[str, List[str]] = {}
-    connector_name: str = Field(default="binance_perpetual_testnet")
-    trading_pair: str = Field(default="BTC-USDT")
+    connector_name: str = "binance_perpetual_testnet"
+    trading_pair: str = "BTC-USDT"
     side: TradeType = TradeType.BUY
     leverage: int = 1
     amounts_quote: List[Decimal] = [Decimal(100),Decimal(100)]
