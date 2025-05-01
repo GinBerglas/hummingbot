@@ -22,11 +22,12 @@ from hummingbot.strategy_v2.executors.position_executor.data_types import Traili
 
 
 
-class DCAConfig(StrategyV2ConfigBase):
+class SimpleDCAConfig(StrategyV2ConfigBase):
     script_file_name: str = os.path.basename(__file__)
-
-    connector_name: str = "binance_perpetual_testnet"
-    trading_pair: str = "BTC-USDT"
+    markets: Dict[str, List[str]] = {}
+    exchange: str = Field(default="binance_perpetual_testnet")
+    # connector_name: str = Field(default="binance_perpetual_testnet")
+    trading_pair: str = Field(default="BTC-USDT")
     side: TradeType = TradeType.BUY
     leverage: int = 1
     amounts_quote: List[Decimal] = [Decimal(100),Decimal(100)]
@@ -39,8 +40,6 @@ class DCAConfig(StrategyV2ConfigBase):
     mode: DCAMode = DCAMode.MAKER
     activation_bounds: Optional[List[Decimal]] = None
 
-    markets = {connector_name: {trading_pair}}
-
 
 class SimpleDCA(StrategyV2Base):
     """
@@ -51,13 +50,13 @@ class SimpleDCA(StrategyV2Base):
     markets: Dict[str, Set[str]]
 
     @classmethod
-    def init_markets(cls, config: DCAConfig):
-        markets = config.markets
-        cls.markets = markets
+    def init_markets(cls, config: SimpleDCAConfig):
+        cls.markets = {config.exchange: {config.trading_pair}}
 
-    def __init__(self, connectors: Dict[str, ConnectorBase], config: DCAConfig):
+    def __init__(self, connectors: Dict[str, ConnectorBase], config: SimpleDCAConfig):
+
         super().__init__(connectors, config)
-        self.config = config
+
 
     # def start(self, clock: Clock, timestamp: float) -> None:
     #     """
@@ -75,7 +74,7 @@ class SimpleDCA(StrategyV2Base):
         """
         create_actions = [CreateExecutorAction(executor_config=DCAExecutorConfig(
             timestamp=self.market_data_provider.time(),
-            connector_name=self.config.connector_name,
+            connector_name=self.config.exchange,
             trading_pair=self.config.trading_pair,
             mode=DCAMode.MAKER,
             side=self.config.side,
@@ -85,6 +84,3 @@ class SimpleDCA(StrategyV2Base):
             take_profit=self.config.take_profit,
             trailing_stop=self.config.trailing_stop))]
         raise create_actions
-
-
-x = SimpleDCA()

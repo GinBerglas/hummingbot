@@ -19,9 +19,9 @@ class SimpleDirectionalRSIConfig(StrategyV2ConfigBase):
     markets: Dict[str, List[str]] = {}
     candles_config: List[CandlesConfig] = []
     controllers_config: List[str] = []
-    exchange: str = Field(default="hyperliquid_perpetual")
-    trading_pair: str = Field(default="ETH-USD")
-    candles_exchange: str = Field(default="binance_perpetual")
+    exchange: str = Field(default="binance_perpetual_testnet")
+    trading_pair: str = Field(default="ETH-USDT")
+    candles_exchange: str = Field(default="binance_perpetual_testnet")
     candles_pair: str = Field(default="ETH-USDT")
     candles_interval: str = Field(default="1m")
     candles_length: int = Field(default=60, gt=0)
