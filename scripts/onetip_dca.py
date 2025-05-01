@@ -88,4 +88,4 @@ class SimpleDCA(StrategyV2Base):
                 take_profit=self.config.take_profit,
                 trailing_stop=self.config.trailing_stop)))
             self.finish = True
-        raise create_actions
+        return create_actions
