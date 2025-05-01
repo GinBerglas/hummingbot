@@ -41,6 +41,7 @@ class SimpleDCAConfig(StrategyV2ConfigBase):
     activation_bounds: Optional[List[Decimal]] = None
 
 
+
 class SimpleDCA(StrategyV2Base):
     """
 
@@ -48,6 +49,7 @@ class SimpleDCA(StrategyV2Base):
 
     # account_config_set = False
     markets: Dict[str, Set[str]]
+    finish = False
 
     @classmethod
     def init_markets(cls, config: SimpleDCAConfig):
@@ -72,15 +74,18 @@ class SimpleDCA(StrategyV2Base):
         """
         Create actions proposal based on the current state of the executors.
         """
-        create_actions = [CreateExecutorAction(executor_config=DCAExecutorConfig(
-            timestamp=self.market_data_provider.time(),
-            connector_name=self.config.exchange,
-            trading_pair=self.config.trading_pair,
-            mode=DCAMode.MAKER,
-            side=self.config.side,
-            prices=self.config.prices,
-            amounts_quote=self.config.amounts_quote,
-            stop_loss=self.config.stop_loss,
-            take_profit=self.config.take_profit,
-            trailing_stop=self.config.trailing_stop))]
+        create_actions = []
+        if not self.finish:
+            create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
+                timestamp=self.market_data_provider.time(),
+                connector_name=self.config.exchange,
+                trading_pair=self.config.trading_pair,
+                mode=DCAMode.MAKER,
+                side=self.config.side,
+                prices=self.config.prices,
+                amounts_quote=self.config.amounts_quote,
+                stop_loss=self.config.stop_loss,
+                take_profit=self.config.take_profit,
+                trailing_stop=self.config.trailing_stop)))
+            self.finish = True
         raise create_actions
