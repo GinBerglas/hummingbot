@@ -58,7 +58,6 @@ class SimpleDCA(StrategyV2Base):
     def __init__(self, connectors: Dict[str, ConnectorBase], config: SimpleDCAConfig):
 
         super().__init__(connectors, config)
-        self.config = config
 
     def determine_executor_actions(self) -> List[ExecutorAction]:
         """
@@ -66,7 +65,7 @@ class SimpleDCA(StrategyV2Base):
         """
         active_executors_by_connector_pair = self.filter_executors(
             executors=self.get_all_executors(),
-            filter_func=lambda e: e.connector_name == self.exchange and e.trading_pair == self.config.trading_pair and e.is_active
+            filter_func=lambda e: e.connector_name == self.config.exchange and e.trading_pair == self.config.trading_pair and e.is_active
         )
         create_actions = []
         if len(active_executors_by_connector_pair) == 0:
