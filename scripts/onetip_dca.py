@@ -1,4 +1,5 @@
 import os
+import time
 from decimal import Decimal
 from typing import Dict, List, Optional, Set
 
@@ -30,15 +31,18 @@ class SimpleDCAConfig(StrategyV2ConfigBase):
     trading_pair: str = Field(default="BTC-USDT")
     side: TradeType = TradeType.BUY
     leverage: int = 1
-    amounts_quote: List[Decimal] = [Decimal(10),Decimal(10)]
-    prices: List[Decimal]  = [Decimal(96000),Decimal(95000)]
     take_profit: Optional[Decimal] = None
     stop_loss: Optional[Decimal] = None
-    trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.002"),
-                                                              trailing_delta=Decimal("0.001"))
     time_limit: Optional[int] = None
     mode: DCAMode = DCAMode.MAKER
-    activation_bounds: Optional[List[Decimal]] = None
+
+    trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.01"),
+                                                              trailing_delta=Decimal("0.002"))
+    price_ratio:Optional[Decimal] = Decimal(0.03)
+    dca_nums: int = 10
+    quote_base: Decimal = Decimal(200)
+    quote_multiply: Decimal = Decimal(1)
+    activation_bounds: Optional[List[Decimal]] = [Decimal(0.03)]
 
 
 
@@ -69,18 +73,22 @@ class SimpleDCA(StrategyV2Base):
         )
         create_actions = []
         if len(active_executors_by_connector_pair) == 0:
+            time.sleep(10) #冷却时间
             mid_price = self.market_data_provider.get_price_by_type(self.config.exchange,
                                                                     self.config.trading_pair,
                                                                     PriceType.MidPrice)
+            prices = [mid_price * (1-i * self.config.price_ratio) for i in range(self.config.dca_nums)]
+            amounts_quote = [self.config.quote_base * pow(self.config.quote_multiply,i) for i in range(self.config.dca_nums)]
             create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
                 timestamp=self.market_data_provider.time(),
                 connector_name=self.config.exchange,
                 trading_pair=self.config.trading_pair,
                 mode=DCAMode.MAKER,
                 side=self.config.side,
-                prices=[mid_price,mid_price-100],
-                amounts_quote=self.config.amounts_quote,
+                prices=prices,
+                amounts_quote=amounts_quote,
                 stop_loss=self.config.stop_loss,
                 take_profit=self.config.take_profit,
-                trailing_stop=self.config.trailing_stop)))
+                trailing_stop=self.config.trailing_stop,
+                activation_bounds=self.config.activation_bounds)))
         return create_actions
