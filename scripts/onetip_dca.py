@@ -69,13 +69,16 @@ class SimpleDCA(StrategyV2Base):
         )
         create_actions = []
         if len(active_executors_by_connector_pair) == 0:
+            mid_price = self.market_data_provider.get_price_by_type(self.config.exchange,
+                                                                    self.config.trading_pair,
+                                                                    PriceType.MidPrice)
             create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
                 timestamp=self.market_data_provider.time(),
                 connector_name=self.config.exchange,
                 trading_pair=self.config.trading_pair,
                 mode=DCAMode.MAKER,
                 side=self.config.side,
-                prices=self.config.prices,
+                prices=[mid_price,mid_price-100],
                 amounts_quote=self.config.amounts_quote,
                 stop_loss=self.config.stop_loss,
                 take_profit=self.config.take_profit,
