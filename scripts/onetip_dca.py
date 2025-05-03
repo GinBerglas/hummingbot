@@ -27,15 +27,15 @@ class SimpleDCAConfig(StrategyV2ConfigBase):
     markets: Dict[str, List[str]] = {}
     exchange: str = Field(default="binance_perpetual_testnet")
     # connector_name: str = Field(default="binance_perpetual_testnet")
-    trading_pair: str = Field(default="ETH-USDT")
+    trading_pair: str = Field(default="BTC-USDT")
     side: TradeType = TradeType.BUY
     leverage: int = 1
-    amounts_quote: List[Decimal] = [Decimal(5000),Decimal(5000)]
-    prices: List[Decimal]  = [Decimal(1800),Decimal(1700)]
+    amounts_quote: List[Decimal] = [Decimal(10),Decimal(10)]
+    prices: List[Decimal]  = [Decimal(96000),Decimal(95000)]
     take_profit: Optional[Decimal] = None
     stop_loss: Optional[Decimal] = None
-    trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.05"),
-                                                              trailing_delta=Decimal("0.01"))
+    trailing_stop: Optional[TrailingStop] = TrailingStop(activation_price=Decimal("0.002"),
+                                                              trailing_delta=Decimal("0.001"))
     time_limit: Optional[int] = None
     mode: DCAMode = DCAMode.MAKER
     activation_bounds: Optional[List[Decimal]] = None
@@ -58,24 +58,18 @@ class SimpleDCA(StrategyV2Base):
     def __init__(self, connectors: Dict[str, ConnectorBase], config: SimpleDCAConfig):
 
         super().__init__(connectors, config)
-
-
-    # def start(self, clock: Clock, timestamp: float) -> None:
-    #     """
-    #     Start the strategy.
-    #     :param clock: Clock to use.
-    #     :param timestamp: Current time.
-    #     """
-    #     self._last_timestamp = timestamp
-    #     self.apply_initial_setting()
-
+        self.config = config
 
     def determine_executor_actions(self) -> List[ExecutorAction]:
         """
         Create actions proposal based on the current state of the executors.
         """
+        active_executors_by_connector_pair = self.filter_executors(
+            executors=self.get_all_executors(),
+            filter_func=lambda e: e.connector_name == self.exchange and e.trading_pair == self.config.trading_pair and e.is_active
+        )
         create_actions = []
-        if not self.finish:
+        if len(active_executors_by_connector_pair) == 0:
             create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
                 timestamp=self.market_data_provider.time(),
                 connector_name=self.config.exchange,
@@ -87,5 +81,4 @@ class SimpleDCA(StrategyV2Base):
                 stop_loss=self.config.stop_loss,
                 take_profit=self.config.take_profit,
                 trailing_stop=self.config.trailing_stop)))
-            self.finish = True
         return create_actions
