@@ -67,7 +67,7 @@ class SimpleDCA(StrategyV2Base):
         """
         Create actions proposal based on the current state of the executors.
         """
-        spot_list_path = settings.CONF_DIR_PATH +  '/spot_config.json'
+        spot_list_path = os.path.join(settings.CONF_DIR_PATH, 'spot_config.json')
         spot_update_ts = os.path.getmtime(spot_list_path)
         if spot_update_ts > self.update_ts:
             """
