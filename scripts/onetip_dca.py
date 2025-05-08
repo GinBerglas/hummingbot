@@ -76,7 +76,7 @@ class SimpleDCA(StrategyV2Base):
             config_dict = {}
             with open(spot_list_path,'r') as file:
                 spot_list_json = json.load(file)
-            for symbol,v in  spot_list_json:
+            for symbol,v in  spot_list_json.items():
                 config_dict[symbol] = DCAParams(v)
             self.config_spot_dict = config_dict
             self.update_ts = spot_update_ts
