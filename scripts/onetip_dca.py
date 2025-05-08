@@ -42,7 +42,7 @@ class DCAParams:
     trailing_delta: Decimal = Decimal(0.001)
     def __init__(self, d):
         for k, v in d.items():
-            setattr(self, k, v)
+            setattr(self, k, Decimal(str(v)))
 
 
 class SimpleDCA(StrategyV2Base):
@@ -93,8 +93,8 @@ class SimpleDCA(StrategyV2Base):
                 mid_price = self.market_data_provider.get_price_by_type(connector_name=self.config.exchange,
                                                                         trading_pair=symbol,
                                                                         price_type=PriceType.MidPrice)
-                prices = [mid_price * (1-i * dca_params.price_ratio) for i in range(dca_params.dca_nums)]
-                amounts_quote = [dca_params.quote_base * pow(dca_params.quote_multiply,i) for i in range(dca_params.dca_nums)]
+                prices = [mid_price * (1-i * dca_params.price_ratio) for i in range(int(dca_params.dca_nums))]
+                amounts_quote = [dca_params.quote_base * pow(dca_params.quote_multiply,i) for i in range(int(dca_params.dca_nums))]
                 create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
                     timestamp=self.market_data_provider.time(),
                     connector_name=self.config.exchange,
