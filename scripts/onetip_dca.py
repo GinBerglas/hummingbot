@@ -101,6 +101,7 @@ class SimpleDCA(StrategyV2Base):
                     trading_pair=symbol,
                     mode=DCAMode.MAKER,
                     side=TradeType.BUY,
+                    leverage = 1,
                     prices=prices,
                     amounts_quote=amounts_quote,
                     stop_loss=None,
