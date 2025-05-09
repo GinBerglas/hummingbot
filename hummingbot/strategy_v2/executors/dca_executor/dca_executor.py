@@ -84,7 +84,7 @@ class DCAExecutor(ExecutorBase):
 
     @property
     def open_filled_amount(self) -> Decimal:
-        return sum([order.executed_amount_base - order.cum_fees_base for order in self.active_open_orders])
+        return sum([order.executed_amount_base * Decimal('0.999') for order in self.active_open_orders])
 
     @property
     def open_filled_amount_quote(self) -> Decimal:
