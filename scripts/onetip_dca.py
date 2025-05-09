@@ -92,7 +92,7 @@ class SimpleDCA(StrategyV2Base):
                 time.sleep(10) #冷却时间
                 mid_price = self.market_data_provider.get_price_by_type(connector_name=self.config.exchange,
                                                                         trading_pair=symbol,
-                                                                        price_type=PriceType.MidPrice)
+                                                                        price_type=PriceType.BestAsk)
                 prices = [mid_price * (1-i * dca_params.price_ratio) for i in range(int(dca_params.dca_nums))]
                 amounts_quote = [dca_params.quote_base * pow(dca_params.quote_multiply,i) for i in range(int(dca_params.dca_nums))]
                 create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
