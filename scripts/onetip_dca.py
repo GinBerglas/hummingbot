@@ -70,9 +70,6 @@ class SimpleDCA(StrategyV2Base):
         spot_list_path = os.path.join(settings.CONF_DIR_PATH, 'spot_config.json')
         spot_update_ts = os.path.getmtime(spot_list_path)
         if spot_update_ts > self.update_ts:
-            """
-            TODO
-            """
             config_dict = {}
             with open(spot_list_path,'r') as file:
                 spot_list_json = json.load(file)
@@ -109,4 +106,9 @@ class SimpleDCA(StrategyV2Base):
                     trailing_stop=TrailingStop(activation_price=dca_params.activation_price,
                                                               trailing_delta=dca_params.trailing_delta),
                     activation_bounds=[dca_params.activation_bounds])))
+            else:
+                stop_ids = [e.id for e in active_executors_by_connector_pair if (self.current_timestamp - e.timestamp > 30 and e.is_trading == False) ]
+                for stop_id in stop_ids:
+                    create_actions.append(StopExecutorAction(executor_id=stop_id))
+
         return create_actions
