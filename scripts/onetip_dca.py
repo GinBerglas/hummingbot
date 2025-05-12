@@ -28,7 +28,7 @@ from hummingbot.strategy_v2.executors.position_executor.data_types import Traili
 
 class SimpleDCAConfig(StrategyV2ConfigBase):
     script_file_name: str = os.path.basename(__file__)
-    markets: Dict[str, List[str]] = 'okx.BTC-USDT,ETH-USDT,XRP-USDT,BNB-USDT,SOL-USDT,DOGE-USDT,ADA-USDT,TRX-USDT,SUI-USDT,LTC-USDT'
+    markets: Dict[str, List[str]] = 'okx.BTC-USDT,ETH-USDT,XRP-USDT,BNB-USDT,SOL-USDT,DOGE-USDT,ADA-USDT,TRX-USDT,SUI-USDT,LTC-USDT,AVAX-USDT,MATIC-USDT,UNI-USDT,AAVE-USDT,DOT-USDT,ATOM-USDT,LINK-USDT,BAND-USDT,APT-USDT,BCH-USDT'
     exchange: str = Field(default="okx")
 
 
