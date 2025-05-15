@@ -84,7 +84,7 @@ class DCAExecutor(ExecutorBase):
 
     @property
     def open_filled_amount(self) -> Decimal:
-        return sum([order.executed_amount_base for order in self.active_open_orders])
+        return sum([order.executed_amount_base - order.cum_fees_base for order in self.active_open_orders])
 
     @property
     def open_filled_amount_quote(self) -> Decimal:
@@ -517,6 +517,7 @@ class DCAExecutor(ExecutorBase):
 
         self.logger().info(f'挂单成交,order amount  {sum([order.executed_amount_base for order in self.active_open_orders])}')
         self.logger().info(f'挂单成交,order fee   {sum([order.cum_fees_base for order in self.active_open_orders])}')
+        self.logger().info(f'挂单成交 数量减去手续费   {self.open_filled_amount}')
         if event.order_id in [order.order_id for order in self._open_orders]:
             self._total_executed_amount_backup += event.amount
         self.update_tracked_orders_with_order_id(event.order_id)
