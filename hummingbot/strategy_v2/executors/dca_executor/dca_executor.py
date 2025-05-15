@@ -84,7 +84,7 @@ class DCAExecutor(ExecutorBase):
 
     @property
     def open_filled_amount(self) -> Decimal:
-        return sum([order.executed_amount_base * Decimal('0.999') for order in self.active_open_orders])
+        return sum([order.executed_amount_base for order in self.active_open_orders])
 
     @property
     def open_filled_amount_quote(self) -> Decimal:
@@ -514,6 +514,9 @@ class DCAExecutor(ExecutorBase):
         _total_executed_amount_backup, that can be used if the InFlightOrder
         is not available.
         """
+
+        self.logger().info(f'挂单成交,order amount  {sum([order.executed_amount_base for order in self.active_open_orders])}')
+        self.logger().info(f'挂单成交,order fee   {sum([order.cum_fees_base for order in self.active_open_orders])}')
         if event.order_id in [order.order_id for order in self._open_orders]:
             self._total_executed_amount_backup += event.amount
         self.update_tracked_orders_with_order_id(event.order_id)
@@ -541,3 +544,4 @@ class DCAExecutor(ExecutorBase):
             "level_id": self.config.level_id,
             "order_ids": [order.order_id for order in self._open_orders + self._close_orders],
         }
+

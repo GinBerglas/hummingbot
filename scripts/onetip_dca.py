@@ -11,6 +11,7 @@ from hummingbot.core.clock import Clock
 
 from hummingbot.client import settings
 from hummingbot.core.data_type.common import OrderType, PositionMode, PriceType, TradeType
+from hummingbot.core.event.events import BuyOrderCompletedEvent
 from hummingbot.data_feed.candles_feed.candles_factory import CandlesConfig
 from hummingbot.strategy.strategy_v2_base import StrategyV2Base, StrategyV2ConfigBase
 from hummingbot.strategy_v2.executors.dca_executor.data_types import DCAMode, DCAExecutorConfig
@@ -25,10 +26,10 @@ from hummingbot.strategy_v2.executors.data_types import ExecutorConfigBase
 from hummingbot.strategy_v2.executors.position_executor.data_types import TrailingStop
 
 
-
 class SimpleDCAConfig(StrategyV2ConfigBase):
     script_file_name: str = os.path.basename(__file__)
-    markets: Dict[str, List[str]] = 'okx.BTC-USDT,ETH-USDT,XRP-USDT,BNB-USDT,SOL-USDT,DOGE-USDT,SHIB-USDT,TRX-USDT,ONDO-USDT,LTC-USDT,AVAX-USDT,TON-USDT,UNI-USDT,AAVE-USDT,DOT-USDT,ATOM-USDT,LINK-USDT,BAND-USDT,APT-USDT,WLD-USDT'
+    markets: Dict[str, List[
+        str]] = 'okx.BTC-USDT,ETH-USDT,XRP-USDT,BNB-USDT,SOL-USDT,DOGE-USDT,SHIB-USDT,TRX-USDT,ONDO-USDT,LTC-USDT,AVAX-USDT,TON-USDT,UNI-USDT,AAVE-USDT,DOT-USDT,ATOM-USDT,LINK-USDT,BAND-USDT,APT-USDT,WLD-USDT'
     exchange: str = Field(default="okx")
 
 
@@ -40,6 +41,7 @@ class DCAParams:
     activation_bounds: Decimal = Decimal(0.03)
     activation_price: Decimal = Decimal(0.01)
     trailing_delta: Decimal = Decimal(0.001)
+
     def __init__(self, d):
         for k, v in d.items():
             setattr(self, k, Decimal(str(v)))
@@ -53,7 +55,7 @@ class SimpleDCA(StrategyV2Base):
     # account_config_set = False
     markets: Dict[str, Set[str]]
     update_ts: float = 0
-    config_spot_dict: Dict[str,DCAParams] = {}
+    config_spot_dict: Dict[str, DCAParams] = {}
 
     # @classmethod
     # def init_markets(cls, config: SimpleDCAConfig):
@@ -62,6 +64,10 @@ class SimpleDCA(StrategyV2Base):
     def __init__(self, connectors: Dict[str, ConnectorBase], config: SimpleDCAConfig):
 
         super().__init__(connectors, config)
+        self.trading_rule_min_order_size: Dict[str, Decimal] = {}
+        for symbol in self.markets[self.config.exchange]:
+            self.trading_rule_min_order_size[symbol] = self.market_data_provider.get_trading_rules(
+                connector_name=self.config.exchange, asset=symbol).min_order_size
 
     def determine_executor_actions(self) -> List[ExecutorAction]:
         """
@@ -71,9 +77,9 @@ class SimpleDCA(StrategyV2Base):
         spot_update_ts = os.path.getmtime(spot_list_path)
         if spot_update_ts > self.update_ts:
             config_dict = {}
-            with open(spot_list_path,'r') as file:
+            with open(spot_list_path, 'r') as file:
                 spot_list_json = json.load(file)
-            for symbol,v in  spot_list_json.items():
+            for symbol, v in spot_list_json.items():
                 config_dict[symbol] = DCAParams(v)
             self.config_spot_dict = config_dict
             self.update_ts = spot_update_ts
@@ -83,31 +89,35 @@ class SimpleDCA(StrategyV2Base):
 
             active_executors_by_connector_pair = self.filter_executors(
                 executors=self.get_all_executors(),
-                filter_func=lambda e: e.connector_name == self.config.exchange and e.trading_pair == symbol and e.is_active
+                filter_func=lambda
+                    e: e.connector_name == self.config.exchange and e.trading_pair == symbol and e.is_active
             )
             if len(active_executors_by_connector_pair) == 0:
-                time.sleep(10) #冷却时间
-                mid_price = self.market_data_provider.get_price_by_type(connector_name=self.config.exchange,
-                                                                        trading_pair=symbol,
-                                                                        price_type=PriceType.LastTrade)
-                prices = [mid_price * (1-i * dca_params.price_ratio) for i in range(int(dca_params.dca_nums))]
-                amounts_quote = [dca_params.quote_base * pow(dca_params.quote_multiply,i) for i in range(int(dca_params.dca_nums))]
-                create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
-                    timestamp=self.market_data_provider.time(),
-                    connector_name=self.config.exchange,
-                    trading_pair=symbol,
-                    mode=DCAMode.MAKER,
-                    side=TradeType.BUY,
-                    leverage = 1,
-                    prices=prices,
-                    amounts_quote=amounts_quote,
-                    stop_loss=None,
-                    take_profit=None,
-                    trailing_stop=TrailingStop(activation_price=dca_params.activation_price,
-                                                              trailing_delta=dca_params.trailing_delta),
-                    activation_bounds=[dca_params.activation_bounds])))
+                balance = self.market_data_provider.get_balance(connector_name=self.config.exchange, asset=symbol)
+                if balance <= self.trading_rule_min_order_size[symbol]:
+                    mid_price = self.market_data_provider.get_price_by_type(connector_name=self.config.exchange,
+                                                                            trading_pair=symbol,
+                                                                            price_type=PriceType.MidPrice)
+                    prices = [mid_price * (1 - i * dca_params.price_ratio) for i in range(int(dca_params.dca_nums))]
+                    amounts_quote = [dca_params.quote_base * pow(dca_params.quote_multiply, i) for i in
+                                     range(int(dca_params.dca_nums))]
+                    create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
+                        timestamp=self.market_data_provider.time(),
+                        connector_name=self.config.exchange,
+                        trading_pair=symbol,
+                        mode=DCAMode.MAKER,
+                        side=TradeType.BUY,
+                        leverage=1,
+                        prices=prices,
+                        amounts_quote=amounts_quote,
+                        stop_loss=None,
+                        take_profit=None,
+                        trailing_stop=TrailingStop(activation_price=dca_params.activation_price,
+                                                   trailing_delta=dca_params.trailing_delta),
+                        activation_bounds=[dca_params.activation_bounds])))
             else:
-                stop_ids = [e.id for e in active_executors_by_connector_pair if (self.current_timestamp - e.timestamp > 30 and e.is_trading == False) ]
+                stop_ids = [e.id for e in active_executors_by_connector_pair if
+                            (self.current_timestamp - e.timestamp > 60 and e.is_trading == False)]
                 for stop_id in stop_ids:
                     create_actions.append(StopExecutorAction(executor_id=stop_id))
 
