@@ -56,7 +56,7 @@ class SimpleDCA(StrategyV2Base):
     markets: Dict[str, Set[str]]
     update_ts: float = 0
     config_spot_dict: Dict[str, DCAParams] = {}
-
+    trading_rule_min_order_size: Dict[str, Decimal] = {}
     # @classmethod
     # def init_markets(cls, config: SimpleDCAConfig):
     #     cls.markets = {config.exchange: {config.trading_pair}}
@@ -65,10 +65,7 @@ class SimpleDCA(StrategyV2Base):
     def __init__(self, connectors: Dict[str, ConnectorBase], config: SimpleDCAConfig):
 
         super().__init__(connectors, config)
-        self.trading_rule_min_order_size: Dict[str, Decimal] = {}
-        for symbol in self.markets[self.config.exchange]:
-            self.trading_rule_min_order_size[symbol] = self.market_data_provider.get_trading_rules(
-                connector_name=self.config.exchange, trading_pair=symbol).min_order_size
+
 
 
     def determine_executor_actions(self) -> List[ExecutorAction]:
@@ -96,6 +93,10 @@ class SimpleDCA(StrategyV2Base):
             )
             if len(active_executors_by_connector_pair) == 0:
                 balance = self.market_data_provider.get_balance(connector_name=self.config.exchange, asset=symbol)
+                if not self.trading_rule_min_order_size.get(symbol):
+                    self.trading_rule_min_order_size[symbol] = self.market_data_provider.get_trading_rules(
+                            connector_name=self.config.exchange, trading_pair=symbol).min_order_size
+
                 if balance <= self.trading_rule_min_order_size[symbol]:
                     mid_price = self.market_data_provider.get_price_by_type(connector_name=self.config.exchange,
                                                                             trading_pair=symbol,
