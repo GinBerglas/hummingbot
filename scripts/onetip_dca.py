@@ -91,7 +91,7 @@ class SimpleDCA(StrategyV2Base):
             ex_balances:Dict = self.market_data_provider.get_connector(connector_name=self.config.exchange).get_all_balances()
             sum_value = 0
             for token, bal in ex_balances.items():
-                rate = self.market_data_provider.get_rate(pair=token)
+                rate = self.market_data_provider.get_rate(pair=token + '-USDT')
                 rate = Decimal("0") if rate is None else rate
                 sum_value += rate * bal
             self.update_balance_ts = time.time()
