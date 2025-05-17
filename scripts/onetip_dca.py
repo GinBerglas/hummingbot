@@ -57,6 +57,8 @@ class SimpleDCA(StrategyV2Base):
     update_ts: float = 0
     config_spot_dict: Dict[str, DCAParams] = {}
     trading_rule_min_order_size: Dict[str, Decimal] = {}
+    balance_all: Decimal
+    update_balance_ts:float = 0
     # @classmethod
     # def init_markets(cls, config: SimpleDCAConfig):
     #     cls.markets = {config.exchange: {config.trading_pair}}
@@ -83,6 +85,19 @@ class SimpleDCA(StrategyV2Base):
             self.config_spot_dict = config_dict
             self.update_ts = spot_update_ts
 
+        #余额日更
+        if time.time() - self.update_balance_ts > 86400:
+            #TODO
+            ex_balances:Dict = self.market_data_provider.get_connector(connector_name=self.config.exchange).get_all_balances()
+            sum_value = 0
+            for token, bal in ex_balances.items():
+                rate = self.market_data_provider.get_rate(pair=token)
+                rate = Decimal("0") if rate is None else rate
+                sum_value += rate * bal
+            self.update_balance_ts = time.time()
+            self.balance_all = sum_value
+            self.logger().info(f'每日更新总余额,总金额为{self.balance} USDT')
+
         create_actions = []
         for symbol, dca_params in self.config_spot_dict.items():
 
@@ -102,7 +117,7 @@ class SimpleDCA(StrategyV2Base):
                                                                             trading_pair=symbol,
                                                                             price_type=PriceType.MidPrice)
                     prices = [mid_price * (1 - i * dca_params.price_ratio) for i in range(int(dca_params.dca_nums))]
-                    amounts_quote = [dca_params.quote_base * pow(dca_params.quote_multiply, i) for i in
+                    amounts_quote = [dca_params.quote_base * self.balance_all * pow(dca_params.quote_multiply, i) for i in
                                      range(int(dca_params.dca_nums))]
                     create_actions.append(CreateExecutorAction(executor_config=DCAExecutorConfig(
                         timestamp=self.market_data_provider.time(),
