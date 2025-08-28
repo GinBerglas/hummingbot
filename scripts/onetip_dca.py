@@ -96,7 +96,7 @@ class SimpleDCA(StrategyV2Base):
                 sum_value += rate * bal
             self.update_balance_ts = time.time()
             self.balance_all = sum_value
-            self.logger().info(f'每日更新总余额,总金额为{self.balance} USDT')
+            self.logger().info(f'每日更新总余额,总金额为{self.balance_all} USDT')
 
         create_actions = []
         for symbol, dca_params in self.config_spot_dict.items():
