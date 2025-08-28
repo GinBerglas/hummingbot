@@ -18,11 +18,11 @@ class SC_Grid(ScriptStrategyBase):
     """
     
     # 核心配置
-    trading_pair = "USDC-USDT"
-    exchange = "bybit"
+    trading_pair = "BTC-USDT"
+    exchange = "bybit_testnet"
     grid_range = 5
-    order_amount = Decimal(100.0)
-    tick_size = Decimal("0.0001")
+    order_amount = Decimal(0.001)
+    tick_size = Decimal("100")
     
     # 系统配置
     price_source = PriceType.MidPrice
