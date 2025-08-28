@@ -19,7 +19,7 @@ class SC_Grid(ScriptStrategyBase):
     
     # 核心配置
     trading_pair = "USDC-USDT"
-    exchange = "bybit_testnet"
+    exchange = "bybit"
     grid_range = 5
     order_amount = Decimal(100.0)
     tick_size = Decimal("0.0001")
