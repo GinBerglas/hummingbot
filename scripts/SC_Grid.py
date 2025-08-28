@@ -18,10 +18,10 @@ class SC_Grid(ScriptStrategyBase):
     """
     
     # 核心配置
-    trading_pair = "FDUSD-USDT"
-    exchange = "binance"
+    trading_pair = "USDC-USDT"
+    exchange = "bybit_testnet"
     grid_range = 5
-    order_amount = Decimal(6.0)
+    order_amount = Decimal(100.0)
     tick_size = Decimal("0.0001")
     
     # 系统配置
